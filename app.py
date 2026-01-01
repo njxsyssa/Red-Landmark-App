@@ -1,10 +1,25 @@
+
 import streamlit as st
 import torch
 import torch.nn as nn
 from torchvision import models, transforms
 from PIL import Image
 import os
+# --- 开关控制代码 开始 ---
 
+
+# 设置一个简单的密码
+ADMIN_PASSWORD = "740812"  # 你可以改成任何你想要的密码
+
+# 在侧边栏输入密码
+password = st.sidebar.text_input("请输入访问密码", type="password")
+
+if password != ADMIN_PASSWORD:
+    st.title("🚫 系统维护中 / System Locked")
+    st.warning("当前系统已关闭或需要权限访问。请联系管理员获取密码。")
+    st.info("如果您是管理员，请输入演示密码。")
+    st.stop()  # 关键命令：这就相当于“关闸”，后面的代码都不会运行
+# --- 开关控制代码 结束 ---
 # 1. 设置页面
 st.set_page_config(page_title="红色地标一拍即知", layout="centered")
 st.title("📸 红色地标一拍即知")
