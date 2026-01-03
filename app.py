@@ -5,6 +5,7 @@ from torchvision import models, transforms
 from PIL import Image
 import os
 import time
+import datetime
 
 # --- 1. 页面基础配置 ---
 st.set_page_config(
@@ -335,9 +336,6 @@ if uploaded_file is not None:
 
     # --- 右侧信息展示 (彻底修复 HTML 渲染问题) ---
     with col_right:
-        # 直接生成 HTML 字符串，不使用任何缩进，防止 Markdown 误判为代码块
-        # 使用 div class="info-container" 包裹内容
-        
         # 1. 标题与标签
         st.markdown(f'<div class="info-container"><div class="landmark-name">{info["title"]}</div>', unsafe_allow_html=True)
         
@@ -345,9 +343,43 @@ if uploaded_file is not None:
         tags_html = "".join([f'<span class="tag-item">{tag}</span>' for tag in info['tags']])
         st.markdown(f'<div>{tags_html} <span style="float:right; font-weight:bold;">AI 置信度: {score:.1f}%</span></div>', unsafe_allow_html=True)
         
-        # 2. 正文内容 (分块渲染，确保稳定)
+        # 2. 正文内容
         st.markdown(f'<div class="section-head">地标简介</div><p class="content-text">{info["desc"]}</p>', unsafe_allow_html=True)
         st.markdown(f'<div class="section-head">历史文脉</div><p class="content-text">{info["history"]}</p>', unsafe_allow_html=True)
         st.markdown(f'<div class="section-head">精神内涵</div><p class="content-text">{info["spirit"]}</p>', unsafe_allow_html=True)
         
+        # 关闭上面的 info-container div
         st.markdown('</div>', unsafe_allow_html=True)
+
+        # ==========================================================
+        # === ✨ 新增功能：用户反馈系统 (大作业加分项) ✨ ===
+        # ==========================================================
+        
+        st.markdown("---") # 分割线
+        st.markdown("#### 📝 协助我们优化模型")
+        st.caption("您的反馈将用于下一轮模型迭代训练")
+
+        # 1. 确保文件夹存在 (自动创建)
+        os.makedirs("feedback_good", exist_ok=True)
+        os.makedirs("feedback_bad", exist_ok=True)
+
+        # 2. 生成文件名 (时间戳 + 预测类别)
+        timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+        save_name = f"{timestamp}_{raw_name}.jpg"
+
+        # 3. 放置两个并排的按钮
+        f_col1, f_col2 = st.columns(2)
+        
+        with f_col1:
+            if st.button("✅ 识别准确", use_container_width=True):
+                save_path = os.path.join("feedback_good", save_name)
+                image.save(save_path) # 保存图片
+                st.success("反馈成功！已归档至[正样本库]。")
+                st.balloons() # 🎉 演示特效：飘气球 (老师最爱看这种交互)
+        
+        with f_col2:
+            if st.button("❌ 识别错误", use_container_width=True):
+                save_path = os.path.join("feedback_bad", save_name)
+                image.save(save_path) # 保存图片
+                st.error("反馈已提交！已归档至[待修正库]。")
+                # 这里不加气球，保持严肃
